@@ -5,9 +5,9 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var passport = require("passport");
 var cookieSession = require("cookie-session");
-var FacebookStrategy = require("passport-facebook").Strategy;
+var Strategy = require("passport-facebook").Strategy;
 var grap = require("fbgraph");
-
+var User = require('./models/user');
 var app = express();
 
 app.use(bodyParser.json());
@@ -19,28 +19,29 @@ app.use(passport.session());
 
 app.set('view engine','pug')
 
-app.get('/',function(req, res){
-	res.render('index');
-});
+
 
 //auth setting
-passport.use(new FacebookStrategy({
+passport.use(new Strategy({
 	clientID: '398599473860653',
 	clientSecret: 'bff1e13cb4471f60ba85c991c253cb8e',
 	callbackURL: 'http://localhost:8000/auth/facebook/callback'
-	},function(accesToken,brefreshToken, prifile, cb){
+	},function(accesToken,refreshToken, profile, cb){
 
-		var user = {
-			accesToken: accesToken,
-			profile: prifile
+		//Save user
 
-		}
-		cb(null, user);
+		User.findOrCreate({uid: profile.id},
+			{name: profile.displayName, provider:"facebook",
+			accesToken: accesToken
+		},function(err, user){
+
+			cb(null, user);
+		});
 	}
 
 ));
 
-//Save user
+
 passport.serializeUser(function(user,done){
 	done(null,user);
 });
@@ -62,6 +63,20 @@ app.get('/auth/facebook/callback',
 		console.log(req.session);
 		res.redirect('/');
 	});
+
+app.get("/auth/close",function(req,res){
+	req.logout();
+	res.redirect("/");
+})
+
+app.get('/',function(req, res){
+	if (typeof req.session.passport == "undefined" || !req.session.passport.user) {
+			res.render('index');
+	}
+	else{
+		res.render('home')
+	}
+});
 
 app.listen(8000,function(){
 	console.log("Port 8000")
