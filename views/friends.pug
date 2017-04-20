@@ -9,7 +9,7 @@ html
 			nav.navbar.navbar-inverse.navbar-embossed
 				.container-fluid
 					.navbar-header
-						a.navbar-brand(href="#") logo
+						a.navbar-brand(href="/") logo
 					.collapse.navbar-collapse
 						ul.nav.navbar-nav.navbar-right
 							li
@@ -17,14 +17,9 @@ html
 							li
 								a(href="/auth/close") Cerrar sesión
 			section
-				h1 Perfil
-				p Cuéntanos acerca de tus logros
+				h1 Tus amigos :D
 				.row
-					.col-xs-5(style ="float:none;")
-						form(action="/logros" method="POST")
-							input(type="text" class="form-control" placeholder="¿Que logro quieres compartir ?" name="logro")
-							input(type="submit" value="Compartir logro" class="btn btn-info" style="margin-top:10px;")
-
-
-
-
+					for user in users
+						.col-xs-6.text-center
+						img(src="http://graph.facebook.com/"+user.uid+"/picture?height=100")
+						h4=user.name
